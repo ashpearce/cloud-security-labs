@@ -1,2 +1,4 @@
-FROM gcr.io/distroless/nodejs22-debian12
-CMD ["-e", "console.log('hello from a scanned image')"]
+FROM node:22-alpine
+RUN apk upgrade --no-cache
+USER node
+CMD ["node", "-e", "console.log('hello from a scanned image')"]
