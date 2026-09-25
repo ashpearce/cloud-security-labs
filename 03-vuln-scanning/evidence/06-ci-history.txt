@@ -1,2 +1,4 @@
+completed	success	fix: revert to Alpine base, which passed the critical CVE gate (SI-2)	container-scan	main	push	36164077957	26s	2026-09-25T16:57:36Z
 completed	failure	fix: move to a current Alpine base and non-root user to clear critica…	container-scan	main	push	36163808455	28s	2026-09-25T16:55:01Z
 completed	success	fix: move to a current Alpine base and non-root user to clear critica…	container-scan	main	push	36163558987	29s	2026-09-25T16:52:45Z
+completed	failure	ci: add container scan gate that fails on critical CVEs; start from a…	container-scan	main	push	36163368589	50s	2026-09-25T16:50:58Z
