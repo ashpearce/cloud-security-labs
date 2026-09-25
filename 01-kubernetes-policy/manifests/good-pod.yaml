@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: good-pod
+spec:
+  containers:
+    - name: web
+      image: nginx:1.27
+      securityContext:
+        privileged: false
+        allowPrivilegeEscalation: false

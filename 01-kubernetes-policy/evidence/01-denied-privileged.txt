@@ -1,0 +1,1 @@
+Error from server (Forbidden): error when creating "manifests/bad-pod.yaml": admission webhook "validation.gatekeeper.sh" denied the request: [no-privileged-containers] Container <web> is privileged. Blocked under NIST 800-53 AC-6 (least privilege).
