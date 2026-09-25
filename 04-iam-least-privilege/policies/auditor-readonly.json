@@ -1,0 +1,26 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadS3SecurityPosture",
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListAllMyBuckets",
+        "s3:GetBucketVersioning",
+        "s3:GetEncryptionConfiguration",
+        "s3:GetBucketPublicAccessBlock",
+        "s3:GetBucketPolicyStatus"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ReadAuditTrailStatus",
+      "Effect": "Allow",
+      "Action": [
+        "cloudtrail:DescribeTrails",
+        "cloudtrail:GetTrailStatus"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+
+aws: [ERROR]: An error occurred (AccessDenied) when calling the CreateBucket operation: User: arn:aws:sts::111122223333:assumed-role/csl-auditor-readonly/botocore-session-1790365040 is not authorized to perform: s3:CreateBucket on resource: "arn:aws:s3:::csl-should-fail-111122223333" because no identity-based policy allows the s3:CreateBucket action

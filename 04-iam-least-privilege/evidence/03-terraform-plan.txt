@@ -1,0 +1,102 @@
+data.aws_caller_identity.me: Reading...
+data.aws_caller_identity.me: Read complete after 0s [id=111122223333]
+data.aws_iam_policy_document.auditor_trust: Reading...
+data.aws_iam_policy_document.auditor_trust: Read complete after 0s [id=401623526]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_iam_role.auditor will be created
+  + resource "aws_iam_role" "auditor" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Condition = {
+                          + ArnLike      = {
+                              + "aws:PrincipalArn" = "arn:aws:iam::111122223333:role/aws-reserved/sso.amazonaws.com/*"
+                            }
+                          + StringEquals = {
+                              + "sts:ExternalId" = "csl-lab-2026"
+                            }
+                        }
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + AWS = "arn:aws:iam::111122223333:root"
+                        }
+                      + Sid       = "AllowSsoUsersWithExternalId"
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + description           = "Least-privilege read-only role for security posture checks"
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "csl-auditor-readonly"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags_all              = {
+          + "Project" = "cloud-security-labs"
+          + "Track"   = "04-iam-least-privilege"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # aws_iam_role_policy.auditor will be created
+  + resource "aws_iam_role_policy" "auditor" {
+      + id          = (known after apply)
+      + name        = "least-privilege-read"
+      + name_prefix = (known after apply)
+      + policy      = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action   = [
+                          + "s3:ListAllMyBuckets",
+                          + "s3:GetBucketVersioning",
+                          + "s3:GetEncryptionConfiguration",
+                          + "s3:GetBucketPublicAccessBlock",
+                          + "s3:GetBucketPolicyStatus",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                      + Sid      = "ReadS3SecurityPosture"
+                    },
+                  + {
+                      + Action   = [
+                          + "cloudtrail:DescribeTrails",
+                          + "cloudtrail:GetTrailStatus",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                      + Sid      = "ReadAuditTrailStatus"
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + role        = (known after apply)
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + auditor_role_arn = (known after apply)
+
+─────────────────────────────────────────────────────────────────────────────
+
+Saved the plan to: tfplan
+
+To perform exactly these actions, run the following command to apply:
+    terraform apply "tfplan"

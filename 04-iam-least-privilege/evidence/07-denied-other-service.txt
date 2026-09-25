@@ -1,0 +1,2 @@
+
+aws: [ERROR]: An error occurred (UnauthorizedOperation) when calling the DescribeInstances operation: You are not authorized to perform this operation. User: arn:aws:sts::111122223333:assumed-role/csl-auditor-readonly/botocore-session-1790365040 is not authorized to perform: ec2:DescribeInstances because no identity-based policy allows the ec2:DescribeInstances action

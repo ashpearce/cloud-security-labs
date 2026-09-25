@@ -1,0 +1,12 @@
+[
+    {
+        "Type": "ERROR",
+        "Issue": "INVALID_ACTION",
+        "Detail": "The action s3:GetObjects does not exist."
+    },
+    {
+        "Type": "SECURITY_WARNING",
+        "Issue": "PASS_ROLE_WITH_STAR_IN_RESOURCE",
+        "Detail": "Using the iam:PassRole action with wildcards (*) in the resource can be overly permissive because it allows iam:PassRole permissions on multiple resources. We recommend that you specify resource ARNs or add the iam:PassedToService condition key to your statement."
+    }
+]

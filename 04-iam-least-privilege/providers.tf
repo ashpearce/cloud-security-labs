@@ -1,0 +1,22 @@
+terraform {
+  required_version = ">= 1.6"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region  = "us-east-1"
+  profile = "labs"
+
+  default_tags {
+    tags = {
+      Project = "cloud-security-labs"
+      Track   = "04-iam-least-privilege"
+    }
+  }
+}

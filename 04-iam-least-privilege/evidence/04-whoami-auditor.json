@@ -1,0 +1,5 @@
+{
+    "UserId": "AROAZYCGUELRAQ5L446IE:botocore-session-1790365040",
+    "Account": "111122223333",
+    "Arn": "arn:aws:sts::111122223333:assumed-role/csl-auditor-readonly/botocore-session-1790365040"
+}
