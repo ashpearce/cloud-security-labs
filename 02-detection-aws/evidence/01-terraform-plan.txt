@@ -1,0 +1,603 @@
+data.aws_caller_identity.me: Reading...
+data.aws_iam_policy_document.trail_assume: Reading...
+data.aws_iam_policy_document.config_assume: Reading...
+data.aws_iam_policy_document.config_assume: Read complete after 0s [id=607352202]
+data.aws_iam_policy_document.trail_assume: Read complete after 0s [id=1399789601]
+data.aws_caller_identity.me: Read complete after 0s [id=111122223333]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+ <= read (data resources)
+
+Terraform will perform the following actions:
+
+  # data.aws_iam_policy_document.logs_bucket will be read during apply
+  # (config refers to values not yet known)
+ <= data "aws_iam_policy_document" "logs_bucket" {
+      + id            = (known after apply)
+      + json          = (known after apply)
+      + minified_json = (known after apply)
+
+      + statement {
+          + actions   = [
+              + "s3:GetBucketAcl",
+            ]
+          + resources = [
+              + (known after apply),
+            ]
+          + sid       = "CloudTrailAclCheck"
+
+          + principals {
+              + identifiers = [
+                  + "cloudtrail.amazonaws.com",
+                ]
+              + type        = "Service"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "s3:PutObject",
+            ]
+          + resources = [
+              + (known after apply),
+            ]
+          + sid       = "CloudTrailWrite"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "bucket-owner-full-control",
+                ]
+              + variable = "s3:x-amz-acl"
+            }
+
+          + principals {
+              + identifiers = [
+                  + "cloudtrail.amazonaws.com",
+                ]
+              + type        = "Service"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "s3:GetBucketAcl",
+              + "s3:ListBucket",
+            ]
+          + resources = [
+              + (known after apply),
+            ]
+          + sid       = "ConfigAclCheck"
+
+          + principals {
+              + identifiers = [
+                  + "config.amazonaws.com",
+                ]
+              + type        = "Service"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "s3:PutObject",
+            ]
+          + resources = [
+              + (known after apply),
+            ]
+          + sid       = "ConfigWrite"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "bucket-owner-full-control",
+                ]
+              + variable = "s3:x-amz-acl"
+            }
+
+          + principals {
+              + identifiers = [
+                  + "config.amazonaws.com",
+                ]
+              + type        = "Service"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "s3:*",
+            ]
+          + effect    = "Deny"
+          + resources = [
+              + (known after apply),
+              + (known after apply),
+            ]
+          + sid       = "DenyInsecureTransport"
+
+          + condition {
+              + test     = "Bool"
+              + values   = [
+                  + "false",
+                ]
+              + variable = "aws:SecureTransport"
+            }
+
+          + principals {
+              + identifiers = [
+                  + "*",
+                ]
+              + type        = "*"
+            }
+        }
+    }
+
+  # data.aws_iam_policy_document.trail_to_logs will be read during apply
+  # (config refers to values not yet known)
+ <= data "aws_iam_policy_document" "trail_to_logs" {
+      + id            = (known after apply)
+      + json          = (known after apply)
+      + minified_json = (known after apply)
+
+      + statement {
+          + actions   = [
+              + "logs:CreateLogStream",
+              + "logs:PutLogEvents",
+            ]
+          + resources = [
+              + (known after apply),
+            ]
+        }
+    }
+
+  # aws_cloudtrail.main will be created
+  + resource "aws_cloudtrail" "main" {
+      + arn                           = (known after apply)
+      + cloud_watch_logs_group_arn    = (known after apply)
+      + cloud_watch_logs_role_arn     = (known after apply)
+      + enable_log_file_validation    = true
+      + enable_logging                = true
+      + home_region                   = (known after apply)
+      + id                            = (known after apply)
+      + include_global_service_events = true
+      + is_multi_region_trail         = true
+      + is_organization_trail         = false
+      + name                          = "csl-trail"
+      + s3_bucket_name                = (known after apply)
+      + s3_key_prefix                 = "cloudtrail"
+      + sns_topic_arn                 = (known after apply)
+      + tags_all                      = {
+          + "Project" = "cloud-security-labs"
+          + "Track"   = "02-detection-aws"
+        }
+    }
+
+  # aws_cloudwatch_log_group.trail will be created
+  + resource "aws_cloudwatch_log_group" "trail" {
+      + arn               = (known after apply)
+      + id                = (known after apply)
+      + log_group_class   = (known after apply)
+      + name              = "/csl/cloudtrail"
+      + name_prefix       = (known after apply)
+      + retention_in_days = 30
+      + skip_destroy      = false
+      + tags_all          = {
+          + "Project" = "cloud-security-labs"
+          + "Track"   = "02-detection-aws"
+        }
+    }
+
+  # aws_cloudwatch_log_metric_filter.detections["console-login-without-mfa"] will be created
+  + resource "aws_cloudwatch_log_metric_filter" "detections" {
+      + id             = (known after apply)
+      + log_group_name = "/csl/cloudtrail"
+      + name           = "csl-console-login-without-mfa"
+      + pattern        = "{ ($.eventName = \"ConsoleLogin\") && ($.additionalEventData.MFAUsed != \"Yes\") && ($.userIdentity.type = \"IAMUser\") && ($.responseElements.ConsoleLogin = \"Success\") }"
+
+      + metric_transformation {
+          + name      = "console-login-without-mfa"
+          + namespace = "CSL/Detections"
+          + unit      = "None"
+          + value     = "1"
+        }
+    }
+
+  # aws_cloudwatch_log_metric_filter.detections["root-account-usage"] will be created
+  + resource "aws_cloudwatch_log_metric_filter" "detections" {
+      + id             = (known after apply)
+      + log_group_name = "/csl/cloudtrail"
+      + name           = "csl-root-account-usage"
+      + pattern        = "{ $.userIdentity.type = \"Root\" && $.userIdentity.invokedBy NOT EXISTS && $.eventType != \"AwsServiceEvent\" }"
+
+      + metric_transformation {
+          + name      = "root-account-usage"
+          + namespace = "CSL/Detections"
+          + unit      = "None"
+          + value     = "1"
+        }
+    }
+
+  # aws_cloudwatch_log_metric_filter.detections["security-group-changes"] will be created
+  + resource "aws_cloudwatch_log_metric_filter" "detections" {
+      + id             = (known after apply)
+      + log_group_name = "/csl/cloudtrail"
+      + name           = "csl-security-group-changes"
+      + pattern        = "{ ($.eventName = AuthorizeSecurityGroupIngress) || ($.eventName = AuthorizeSecurityGroupEgress) || ($.eventName = RevokeSecurityGroupIngress) || ($.eventName = RevokeSecurityGroupEgress) || ($.eventName = CreateSecurityGroup) || ($.eventName = DeleteSecurityGroup) }"
+
+      + metric_transformation {
+          + name      = "security-group-changes"
+          + namespace = "CSL/Detections"
+          + unit      = "None"
+          + value     = "1"
+        }
+    }
+
+  # aws_cloudwatch_metric_alarm.detections["console-login-without-mfa"] will be created
+  + resource "aws_cloudwatch_metric_alarm" "detections" {
+      + actions_enabled                       = true
+      + alarm_actions                         = (known after apply)
+      + alarm_description                     = "An IAM user signed in to the console without MFA (IA-2(1))"
+      + alarm_name                            = "csl-console-login-without-mfa"
+      + arn                                   = (known after apply)
+      + comparison_operator                   = "GreaterThanOrEqualToThreshold"
+      + evaluate_low_sample_count_percentiles = (known after apply)
+      + evaluation_periods                    = 1
+      + id                                    = (known after apply)
+      + metric_name                           = "console-login-without-mfa"
+      + namespace                             = "CSL/Detections"
+      + period                                = 300
+      + statistic                             = "Sum"
+      + tags_all                              = {
+          + "Project" = "cloud-security-labs"
+          + "Track"   = "02-detection-aws"
+        }
+      + threshold                             = 1
+      + treat_missing_data                    = "notBreaching"
+    }
+
+  # aws_cloudwatch_metric_alarm.detections["root-account-usage"] will be created
+  + resource "aws_cloudwatch_metric_alarm" "detections" {
+      + actions_enabled                       = true
+      + alarm_actions                         = (known after apply)
+      + alarm_description                     = "Root account was used (AC-6(9), AU-6)"
+      + alarm_name                            = "csl-root-account-usage"
+      + arn                                   = (known after apply)
+      + comparison_operator                   = "GreaterThanOrEqualToThreshold"
+      + evaluate_low_sample_count_percentiles = (known after apply)
+      + evaluation_periods                    = 1
+      + id                                    = (known after apply)
+      + metric_name                           = "root-account-usage"
+      + namespace                             = "CSL/Detections"
+      + period                                = 300
+      + statistic                             = "Sum"
+      + tags_all                              = {
+          + "Project" = "cloud-security-labs"
+          + "Track"   = "02-detection-aws"
+        }
+      + threshold                             = 1
+      + treat_missing_data                    = "notBreaching"
+    }
+
+  # aws_cloudwatch_metric_alarm.detections["security-group-changes"] will be created
+  + resource "aws_cloudwatch_metric_alarm" "detections" {
+      + actions_enabled                       = true
+      + alarm_actions                         = (known after apply)
+      + alarm_description                     = "A security group was created, changed, or deleted (CM-3, SI-4)"
+      + alarm_name                            = "csl-security-group-changes"
+      + arn                                   = (known after apply)
+      + comparison_operator                   = "GreaterThanOrEqualToThreshold"
+      + evaluate_low_sample_count_percentiles = (known after apply)
+      + evaluation_periods                    = 1
+      + id                                    = (known after apply)
+      + metric_name                           = "security-group-changes"
+      + namespace                             = "CSL/Detections"
+      + period                                = 300
+      + statistic                             = "Sum"
+      + tags_all                              = {
+          + "Project" = "cloud-security-labs"
+          + "Track"   = "02-detection-aws"
+        }
+      + threshold                             = 1
+      + treat_missing_data                    = "notBreaching"
+    }
+
+  # aws_config_config_rule.s3_public_read will be created
+  + resource "aws_config_config_rule" "s3_public_read" {
+      + arn      = (known after apply)
+      + id       = (known after apply)
+      + name     = "s3-bucket-public-read-prohibited"
+      + rule_id  = (known after apply)
+      + tags_all = {
+          + "Project" = "cloud-security-labs"
+          + "Track"   = "02-detection-aws"
+        }
+
+      + evaluation_mode (known after apply)
+
+      + source {
+          + owner             = "AWS"
+          + source_identifier = "S3_BUCKET_PUBLIC_READ_PROHIBITED"
+        }
+    }
+
+  # aws_config_config_rule.s3_versioning will be created
+  + resource "aws_config_config_rule" "s3_versioning" {
+      + arn      = (known after apply)
+      + id       = (known after apply)
+      + name     = "s3-bucket-versioning-enabled"
+      + rule_id  = (known after apply)
+      + tags_all = {
+          + "Project" = "cloud-security-labs"
+          + "Track"   = "02-detection-aws"
+        }
+
+      + evaluation_mode (known after apply)
+
+      + source {
+          + owner             = "AWS"
+          + source_identifier = "S3_BUCKET_VERSIONING_ENABLED"
+        }
+    }
+
+  # aws_config_configuration_recorder.main will be created
+  + resource "aws_config_configuration_recorder" "main" {
+      + id       = (known after apply)
+      + name     = "csl-recorder"
+      + role_arn = (known after apply)
+
+      + recording_group {
+          + all_supported  = false
+          + resource_types = [
+              + "AWS::S3::Bucket",
+            ]
+
+          + exclusion_by_resource_types (known after apply)
+
+          + recording_strategy (known after apply)
+        }
+
+      + recording_mode (known after apply)
+    }
+
+  # aws_config_configuration_recorder_status.main will be created
+  + resource "aws_config_configuration_recorder_status" "main" {
+      + id         = (known after apply)
+      + is_enabled = true
+      + name       = "csl-recorder"
+    }
+
+  # aws_config_delivery_channel.main will be created
+  + resource "aws_config_delivery_channel" "main" {
+      + id             = (known after apply)
+      + name           = "csl-delivery"
+      + s3_bucket_name = (known after apply)
+      + s3_key_prefix  = "config"
+    }
+
+  # aws_guardduty_detector.main will be created
+  + resource "aws_guardduty_detector" "main" {
+      + account_id                   = (known after apply)
+      + arn                          = (known after apply)
+      + enable                       = true
+      + finding_publishing_frequency = "FIFTEEN_MINUTES"
+      + id                           = (known after apply)
+      + tags_all                     = {
+          + "Project" = "cloud-security-labs"
+          + "Track"   = "02-detection-aws"
+        }
+
+      + datasources (known after apply)
+    }
+
+  # aws_iam_role.config will be created
+  + resource "aws_iam_role" "config" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "config.amazonaws.com"
+                        }
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "csl-config-recorder"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags_all              = {
+          + "Project" = "cloud-security-labs"
+          + "Track"   = "02-detection-aws"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # aws_iam_role.trail_to_logs will be created
+  + resource "aws_iam_role" "trail_to_logs" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "cloudtrail.amazonaws.com"
+                        }
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "csl-cloudtrail-to-cloudwatch"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags_all              = {
+          + "Project" = "cloud-security-labs"
+          + "Track"   = "02-detection-aws"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # aws_iam_role_policy.trail_to_logs will be created
+  + resource "aws_iam_role_policy" "trail_to_logs" {
+      + id          = (known after apply)
+      + name        = "write-to-log-group"
+      + name_prefix = (known after apply)
+      + policy      = (known after apply)
+      + role        = (known after apply)
+    }
+
+  # aws_iam_role_policy_attachment.config will be created
+  + resource "aws_iam_role_policy_attachment" "config" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
+      + role       = "csl-config-recorder"
+    }
+
+  # aws_s3_bucket.logs will be created
+  + resource "aws_s3_bucket" "logs" {
+      + acceleration_status         = (known after apply)
+      + acl                         = (known after apply)
+      + arn                         = (known after apply)
+      + bucket                      = "csl-detection-logs-111122223333"
+      + bucket_domain_name          = (known after apply)
+      + bucket_prefix               = (known after apply)
+      + bucket_regional_domain_name = (known after apply)
+      + force_destroy               = true
+      + hosted_zone_id              = (known after apply)
+      + id                          = (known after apply)
+      + object_lock_enabled         = (known after apply)
+      + policy                      = (known after apply)
+      + region                      = (known after apply)
+      + request_payer               = (known after apply)
+      + tags_all                    = {
+          + "Project" = "cloud-security-labs"
+          + "Track"   = "02-detection-aws"
+        }
+      + website_domain              = (known after apply)
+      + website_endpoint            = (known after apply)
+
+      + cors_rule (known after apply)
+
+      + grant (known after apply)
+
+      + lifecycle_rule (known after apply)
+
+      + logging (known after apply)
+
+      + object_lock_configuration (known after apply)
+
+      + replication_configuration (known after apply)
+
+      + server_side_encryption_configuration (known after apply)
+
+      + versioning (known after apply)
+
+      + website (known after apply)
+    }
+
+  # aws_s3_bucket_policy.logs will be created
+  + resource "aws_s3_bucket_policy" "logs" {
+      + bucket = (known after apply)
+      + id     = (known after apply)
+      + policy = (known after apply)
+    }
+
+  # aws_s3_bucket_public_access_block.logs will be created
+  + resource "aws_s3_bucket_public_access_block" "logs" {
+      + block_public_acls       = true
+      + block_public_policy     = true
+      + bucket                  = (known after apply)
+      + id                      = (known after apply)
+      + ignore_public_acls      = true
+      + restrict_public_buckets = true
+    }
+
+  # aws_s3_bucket_server_side_encryption_configuration.logs will be created
+  + resource "aws_s3_bucket_server_side_encryption_configuration" "logs" {
+      + bucket = (known after apply)
+      + id     = (known after apply)
+
+      + rule {
+          + apply_server_side_encryption_by_default {
+              + sse_algorithm     = "AES256"
+                # (1 unchanged attribute hidden)
+            }
+        }
+    }
+
+  # aws_s3_bucket_versioning.logs will be created
+  + resource "aws_s3_bucket_versioning" "logs" {
+      + bucket = (known after apply)
+      + id     = (known after apply)
+
+      + versioning_configuration {
+          + mfa_delete = (known after apply)
+          + status     = "Enabled"
+        }
+    }
+
+  # aws_sns_topic.security_alerts will be created
+  + resource "aws_sns_topic" "security_alerts" {
+      + arn                         = (known after apply)
+      + beginning_archive_time      = (known after apply)
+      + content_based_deduplication = false
+      + fifo_throughput_scope       = (known after apply)
+      + fifo_topic                  = false
+      + id                          = (known after apply)
+      + name                        = "csl-security-alerts"
+      + name_prefix                 = (known after apply)
+      + owner                       = (known after apply)
+      + policy                      = (known after apply)
+      + signature_version           = (known after apply)
+      + tags_all                    = {
+          + "Project" = "cloud-security-labs"
+          + "Track"   = "02-detection-aws"
+        }
+      + tracing_config              = (known after apply)
+    }
+
+  # aws_sns_topic_subscription.email will be created
+  + resource "aws_sns_topic_subscription" "email" {
+      + arn                             = (known after apply)
+      + confirmation_timeout_in_minutes = 1
+      + confirmation_was_authenticated  = (known after apply)
+      + endpoint                        = "redacted@example.com"
+      + endpoint_auto_confirms          = false
+      + filter_policy_scope             = (known after apply)
+      + id                              = (known after apply)
+      + owner_id                        = (known after apply)
+      + pending_confirmation            = (known after apply)
+      + protocol                        = "email"
+      + raw_message_delivery            = false
+      + topic_arn                       = (known after apply)
+    }
+
+Plan: 25 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + alerts_topic_arn      = (known after apply)
+  + guardduty_detector_id = (known after apply)
+  + log_bucket            = (known after apply)
+
+─────────────────────────────────────────────────────────────────────────────
+
+Saved the plan to: tfplan
+
+To perform exactly these actions, run the following command to apply:
+    terraform apply "tfplan"
