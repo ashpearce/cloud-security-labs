@@ -1,0 +1,16 @@
+# Terraform working files and state (can contain sensitive values)
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+
+# macOS
+.DS_Store
+
+# Scanner working files
+*.sarif
