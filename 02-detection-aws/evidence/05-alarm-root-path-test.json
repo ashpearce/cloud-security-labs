@@ -1,0 +1,10 @@
+[
+    {
+        "When": "2026-09-25T11:23:08.062000-04:00",
+        "What": "Alarm updated from OK to ALARM"
+    },
+    {
+        "When": "2026-09-25T11:18:08.061000-04:00",
+        "What": "Alarm updated from INSUFFICIENT_DATA to OK"
+    }
+]
