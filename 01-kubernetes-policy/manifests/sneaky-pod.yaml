@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sneaky-pod
+  labels:
+    app: sneaky
+spec:
+  containers:
+    - name: web
+      image: nginx:1.27
+      securityContext:
+        privileged: true
