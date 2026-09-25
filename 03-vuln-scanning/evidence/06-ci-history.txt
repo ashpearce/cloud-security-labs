@@ -1,0 +1,2 @@
+completed	success	fix: move to a current Alpine base and non-root user to clear critica…	container-scan	main	push	36163558987	29s	2026-09-25T16:52:45Z
+completed	failure	ci: add container scan gate that fails on critical CVEs; start from a…	container-scan	main	push	36163368589	50s	2026-09-25T16:50:58Z
