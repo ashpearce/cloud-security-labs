@@ -1,0 +1,31 @@
+name: container-scan
+
+on:
+  push:
+    paths:
+      - "03-vuln-scanning/app/**"
+      - ".github/workflows/container-scan.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Build image
+        run: docker build -t csl-app:${{ github.sha }} 03-vuln-scanning/app
+
+      - name: Scan image and fail on CRITICAL vulnerabilities
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:0.58.1 image \
+            --no-progress \
+            --exit-code 1 \
+            --severity CRITICAL \
+            csl-app:${{ github.sha }}

@@ -1,0 +1,93 @@
+2026-09-25T12:45:37-04:00	INFO	[misconfig] Misconfiguration scanning is enabled
+2026-09-25T12:45:37-04:00	INFO	[checks-client] Need to update the checks bundle
+2026-09-25T12:45:37-04:00	INFO	[checks-client] Downloading the checks bundle...
+234.65 KiB / 234.65 KiB [----------------------------------------------------------------------------------] 100.00% ? p/s 200ms2026-09-25T12:45:39-04:00	INFO	[terraform scanner] Scanning root module	file_path="."
+2026-09-25T12:45:39-04:00	WARN	[terraform parser] Variable values were not found in the environment or variable files. Evaluating may not work correctly.	module="root" variables="alert_email"
+2026-09-25T12:45:39-04:00	INFO	[terraform scanner] Scanning root module	file_path="."
+2026-09-25T12:45:39-04:00	INFO	Detected config files	num=3
+
+Report Summary
+
+┌────────────┬────────────────────────┬───────────────────┐
+│   Target   │          Type          │ Misconfigurations │
+├────────────┼────────────────────────┼───────────────────┤
+│ .          │ terraformplan-snapshot │         0         │
+├────────────┼────────────────────────┼───────────────────┤
+│ alarms.tf  │ terraformplan-snapshot │         1         │
+├────────────┼────────────────────────┼───────────────────┤
+│ logging.tf │ terraformplan-snapshot │         2         │
+└────────────┴────────────────────────┴───────────────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+
+alarms.tf (terraformplan-snapshot)
+==================================
+Tests: 1 (SUCCESSES: 0, FAILURES: 1)
+Failures: 1 (MEDIUM: 0, HIGH: 1, CRITICAL: 0)
+
+AWS-0095 (HIGH): Topic does not have encryption enabled.
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+Topics should be encrypted to protect their contents.
+
+
+See https://avd.aquasec.com/misconfig/aws-0095
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ alarms.tf:2-4
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   2 ┌ resource "aws_sns_topic" "security_alerts" {
+   3 │   name = "csl-security-alerts"
+   4 └ }
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+logging.tf (terraformplan-snapshot)
+===================================
+Tests: 2 (SUCCESSES: 0, FAILURES: 2)
+Failures: 2 (MEDIUM: 0, HIGH: 2, CRITICAL: 0)
+
+AWS-0015 (HIGH): CloudTrail does not use a customer managed key to encrypt the logs.
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+Using AWS managed keys does not allow for fine grained control.  Using Customer managed keys provides comprehensive control over cryptographic keys, enabling management of policies, permissions, and rotation, thus enhancing security and compliance measures for sensitive data and systems.
+
+
+See https://avd.aquasec.com/misconfig/aws-0015
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ logging.tf:148-159
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ 148 ┌ resource "aws_cloudtrail" "main" {
+ 149 │   name                          = "csl-trail"
+ 150 │   s3_bucket_name                = aws_s3_bucket.logs.id
+ 151 │   s3_key_prefix                 = "cloudtrail"
+ 152 │   is_multi_region_trail         = true
+ 153 │   include_global_service_events = true
+ 154 │   enable_log_file_validation    = true
+ 155 │   cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.trail.arn}:*"
+ 156 └   cloud_watch_logs_role_arn     = aws_iam_role.trail_to_logs.arn
+ ...   
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+AWS-0132 (HIGH): Bucket does not encrypt data with a customer managed key.
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+Encryption using AWS keys provides protection for your S3 buckets. To gain greater control over encryption, such as key rotation, access policies, and auditability, use customer managed keys (CMKs) with SSE-KMS.
+Note that SSE-KMS is not supported for S3 server access logging destination buckets; in such cases, use SSE-S3 instead.
+
+
+See https://avd.aquasec.com/misconfig/aws-0132
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ logging.tf:29-36
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  29 ┌ resource "aws_s3_bucket_server_side_encryption_configuration" "logs" {
+  30 │   bucket = aws_s3_bucket.logs.id
+  31 │   rule {
+  32 │     apply_server_side_encryption_by_default {
+  33 │       sse_algorithm = "AES256"
+  34 │     }
+  35 │   }
+  36 └ }
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
