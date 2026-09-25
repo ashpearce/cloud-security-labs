@@ -1,0 +1,1 @@
+Error from server (Forbidden): error when creating "manifests/latest-pod.yaml": admission webhook "validation.gatekeeper.sh" denied the request: [no-latest-tag] Container <web> has no tag, which means :latest. Pin a version (NIST 800-53 CM-2).
